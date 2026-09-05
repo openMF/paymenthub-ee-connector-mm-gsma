@@ -29,7 +29,7 @@ gsma:
   api:
     host: https://sandbox.mobilemoneyapi.io/oauth/simulator/v1.1/mm
     account: /accounts
-    channel: https://ph-ee-connector-channel:8443
+    channel: https://paymenthub-ee-connector-channel:8443
 
 dfspids: "DFSPID"
 
