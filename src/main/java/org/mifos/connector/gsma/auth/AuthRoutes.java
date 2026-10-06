@@ -10,28 +10,31 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.mifos.connector.common.gsma.dto.AccessTokenDTO;
 import org.mifos.connector.common.gsma.dto.AuthErrorDTO;
+import org.mifos.connector.gsma.config.GsmaProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AuthRoutes extends RouteBuilder {
 
-    @Value("${gsma.auth.host}")
-    private String authUrl;
+    private final String authUrl;
 
-    @Value("${gsma.auth.client-key}")
-    private String clientKey;
+    private final String clientKey;
 
-    @Value("${gsma.auth.client-secret}")
-    private String clientSecret;
+    private final String clientSecret;
 
     @Autowired
     private AccessTokenStore accessTokenStore;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    public AuthRoutes(GsmaProperties gsmaProperties) {
+        this.authUrl = gsmaProperties.auth().host();
+        this.clientKey = gsmaProperties.auth().clientKey();
+        this.clientSecret = gsmaProperties.auth().clientSecret();
+    }
 
     @Override
     public void configure() {

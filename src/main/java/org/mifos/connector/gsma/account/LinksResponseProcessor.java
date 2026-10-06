@@ -12,11 +12,11 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.mifos.connector.gsma.config.ZeebeProperties;
 import org.mifos.connector.gsma.transfer.CorrelationIDStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -30,8 +30,11 @@ public class LinksResponseProcessor implements Processor {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Value("${zeebe.client.ttl}")
-    private int timeToLive;
+    private final int timeToLive;
+
+    public LinksResponseProcessor(ZeebeProperties zeebeProperties) {
+        this.timeToLive = zeebeProperties.client().ttl();
+    }
 
     @Override
     public void process(Exchange exchange) throws Exception {

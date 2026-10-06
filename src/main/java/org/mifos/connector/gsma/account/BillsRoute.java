@@ -28,12 +28,13 @@ import org.mifos.connector.common.gsma.dto.BillPaymentDTO;
 import org.mifos.connector.common.gsma.dto.ErrorDTO;
 import org.mifos.connector.common.gsma.dto.RequestStateDTO;
 import org.mifos.connector.gsma.auth.AccessTokenStore;
+import org.mifos.connector.gsma.config.ConnectorCamelProperties;
+import org.mifos.connector.gsma.config.GsmaProperties;
 import org.mifos.connector.gsma.transfer.CorrelationIDStore;
 import org.mifos.connector.gsma.transfer.TransferResponseProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -48,19 +49,22 @@ public class BillsRoute extends RouteBuilder {
     @Autowired
     private AccessTokenStore accessTokenStore;
 
-    @Value("${gsma.api.host}")
-    private String baseURL;
+    private final String baseURL;
 
-    @Value("${gsma.api.account}")
-    private String account;
+    private final String account;
 
-    @Value("${camel.host}")
-    private String hostURL;
+    private final String hostURL;
 
     @Autowired
     private TransferResponseProcessor transferResponseProcessor;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    public BillsRoute(GsmaProperties gsmaProperties, ConnectorCamelProperties camelProperties) {
+        this.baseURL = gsmaProperties.api().host();
+        this.account = gsmaProperties.api().account();
+        this.hostURL = camelProperties.host();
+    }
 
     @Override
     public void configure() throws Exception {

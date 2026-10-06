@@ -74,6 +74,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    // Bean Validation provider for the @Validated configuration records; without one the app does not start.
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 }
 configure(this) {
     // NOTE: order matters!

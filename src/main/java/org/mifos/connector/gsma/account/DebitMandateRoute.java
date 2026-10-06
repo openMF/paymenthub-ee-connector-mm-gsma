@@ -20,11 +20,11 @@ import org.mifos.connector.common.channel.dto.TransactionChannelRequestDTO;
 import org.mifos.connector.common.gsma.dto.DebitMandateDTO;
 import org.mifos.connector.common.gsma.dto.ErrorDTO;
 import org.mifos.connector.gsma.auth.AccessTokenStore;
+import org.mifos.connector.gsma.config.GsmaProperties;
 import org.mifos.connector.gsma.transfer.CorrelationIDStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -39,13 +39,16 @@ public class DebitMandateRoute extends RouteBuilder {
     @Autowired
     private CorrelationIDStore correlationIDStore;
 
-    @Value("${gsma.api.host}")
-    private String baseURL;
+    private final String baseURL;
 
-    @Value("${gsma.api.account}")
-    private String account;
+    private final String account;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    public DebitMandateRoute(GsmaProperties gsmaProperties) {
+        this.baseURL = gsmaProperties.api().host();
+        this.account = gsmaProperties.api().account();
+    }
 
     @Override
     public void configure() throws Exception {

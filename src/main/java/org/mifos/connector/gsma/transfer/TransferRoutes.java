@@ -17,10 +17,11 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.mifos.connector.common.gsma.dto.RequestStateDTO;
 import org.mifos.connector.gsma.auth.AccessTokenStore;
+import org.mifos.connector.gsma.config.ConnectorCamelProperties;
+import org.mifos.connector.gsma.config.GsmaProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -38,19 +39,22 @@ public class TransferRoutes extends RouteBuilder {
     @Autowired
     private AccessTokenStore accessTokenStore;
 
-    @Value("${gsma.api.host}")
-    private String baseURL;
+    private final String baseURL;
 
-    @Value("${camel.host}")
-    private String hostURL;
+    private final String hostURL;
 
-    @Value("${gsma.api.channel}")
-    private String channelURL;
+    private final String channelURL;
 
     @Autowired
     private CorrelationIDStore correlationIDStore;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    public TransferRoutes(GsmaProperties gsmaProperties, ConnectorCamelProperties camelProperties) {
+        this.baseURL = gsmaProperties.api().host();
+        this.channelURL = gsmaProperties.api().channel();
+        this.hostURL = camelProperties.host();
+    }
 
     @Override
     public void configure() {

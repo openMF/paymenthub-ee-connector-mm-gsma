@@ -20,12 +20,12 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.mifos.connector.common.gsma.dto.ErrorDTO;
 import org.mifos.connector.common.gsma.dto.RequestStateDTO;
 import org.mifos.connector.gsma.auth.AccessTokenStore;
+import org.mifos.connector.gsma.config.GsmaProperties;
 import org.mifos.connector.gsma.transfer.CorrelationIDStore;
 import org.mifos.connector.gsma.transfer.TransferResponseProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -40,13 +40,16 @@ public class TransactionStateRoute extends RouteBuilder {
     @Autowired
     private TransferResponseProcessor transferResponseProcessor;
 
-    @Value("${gsma.api.host}")
-    private String baseURL;
+    private final String baseURL;
 
-    @Value("${gsma.api.channel}")
-    private String channelURL;
+    private final String channelURL;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    public TransactionStateRoute(GsmaProperties gsmaProperties) {
+        this.baseURL = gsmaProperties.api().host();
+        this.channelURL = gsmaProperties.api().channel();
+    }
 
     @Override
     public void configure() throws Exception {

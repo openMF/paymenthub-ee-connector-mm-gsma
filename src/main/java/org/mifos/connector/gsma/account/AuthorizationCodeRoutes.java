@@ -16,10 +16,10 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.mifos.connector.common.gsma.dto.AuthorizationCodeDTO;
 import org.mifos.connector.gsma.auth.AccessTokenStore;
+import org.mifos.connector.gsma.config.GsmaProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -31,13 +31,16 @@ public class AuthorizationCodeRoutes extends RouteBuilder {
     @Autowired
     private AccessTokenStore accessTokenStore;
 
-    @Value("${gsma.api.host}")
-    private String baseURL;
+    private final String baseURL;
 
-    @Value("${gsma.api.account}")
-    private String account;
+    private final String account;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    public AuthorizationCodeRoutes(GsmaProperties gsmaProperties) {
+        this.baseURL = gsmaProperties.api().host();
+        this.account = gsmaProperties.api().account();
+    }
 
     @Override
     public void configure() throws Exception {

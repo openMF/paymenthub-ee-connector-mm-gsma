@@ -8,9 +8,11 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.camel.Processor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
+@ConfigurationPropertiesScan("org.mifos.connector.gsma.config")
 public class GsmaConnectorApplication {
 
     public static void main(String[] args) {

@@ -31,11 +31,12 @@ import org.mifos.connector.common.gsma.dto.LinksDTO;
 import org.mifos.connector.common.gsma.dto.RequestStateDTO;
 import org.mifos.connector.common.mojaloop.dto.PartyIdInfo;
 import org.mifos.connector.gsma.auth.AccessTokenStore;
+import org.mifos.connector.gsma.config.ConnectorCamelProperties;
+import org.mifos.connector.gsma.config.GsmaProperties;
 import org.mifos.connector.gsma.transfer.CorrelationIDStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -53,16 +54,19 @@ public class LinksRoute extends RouteBuilder {
     @Autowired
     private LinksResponseProcessor linksResponseProcessor;
 
-    @Value("${gsma.api.host}")
-    private String baseURL;
+    private final String baseURL;
 
-    @Value("${camel.host}")
-    private String hostURL;
+    private final String hostURL;
 
-    @Value("${gsma.api.account}")
-    private String account;
+    private final String account;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    public LinksRoute(GsmaProperties gsmaProperties, ConnectorCamelProperties camelProperties) {
+        this.baseURL = gsmaProperties.api().host();
+        this.account = gsmaProperties.api().account();
+        this.hostURL = camelProperties.host();
+    }
 
     @Override
     public void configure() throws Exception {

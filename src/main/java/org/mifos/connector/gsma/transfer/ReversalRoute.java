@@ -18,10 +18,10 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.mifos.connector.common.gsma.dto.GSMATransaction;
 import org.mifos.connector.gsma.auth.AccessTokenStore;
+import org.mifos.connector.gsma.config.GsmaProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -33,13 +33,16 @@ public class ReversalRoute extends RouteBuilder {
     @Autowired
     private AccessTokenStore accessTokenStore;
 
-    @Value("${gsma.api.host}")
-    private String baseURL;
+    private final String baseURL;
 
     @Autowired
     private CorrelationIDStore correlationIDStore;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    public ReversalRoute(GsmaProperties gsmaProperties) {
+        this.baseURL = gsmaProperties.api().host();
+    }
 
     @Override
     public void configure() throws Exception {

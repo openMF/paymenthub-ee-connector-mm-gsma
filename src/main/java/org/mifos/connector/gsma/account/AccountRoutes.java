@@ -20,11 +20,11 @@ import org.mifos.connector.common.gsma.dto.AccountBalanceResponseDTO;
 import org.mifos.connector.common.gsma.dto.AccountNameResponseDTO;
 import org.mifos.connector.common.gsma.dto.ErrorDTO;
 import org.mifos.connector.gsma.auth.AccessTokenStore;
+import org.mifos.connector.gsma.config.GsmaProperties;
 import org.mifos.connector.gsma.zeebe.ZeebeProcessStarter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -40,16 +40,19 @@ public class AccountRoutes extends RouteBuilder {
     @Autowired
     private AccessTokenStore accessTokenStore;
 
-    @Value("${gsma.api.host}")
-    private String baseURL;
+    private final String baseURL;
 
-    @Value("${gsma.api.account}")
-    private String account;
+    private final String account;
 
     @Autowired
     private AccountResponseProcessor accountResponseProcessor;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    public AccountRoutes(GsmaProperties gsmaProperties) {
+        this.baseURL = gsmaProperties.api().host();
+        this.account = gsmaProperties.api().account();
+    }
 
     @Override
     public void configure() throws Exception {
