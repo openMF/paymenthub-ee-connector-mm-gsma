@@ -39,7 +39,7 @@ public class ZeebeWorkers {
             logger.info("Job '{}' started from process '{}' with key {}", job.getType(), job.getBpmnProcessId(), job.getKey());
 
             Map<String, Object> variables = job.getVariablesAsMap();
-            TransactionChannelRequestDTO channelRequest = objectMapper.readValue((String) variables.get("channelRequest"),
+            TransactionChannelRequestDTO channelRequest = objectMapper.readValue(JobVariables.requiredText(variables, "channelRequest"),
                     TransactionChannelRequestDTO.class);
 
             QuoteSwitchRequestDTO quoteRequest = new QuoteSwitchRequestDTO();

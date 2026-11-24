@@ -16,6 +16,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.support.DefaultExchange;
 import org.mifos.connector.common.gsma.dto.GSMATransaction;
+import org.mifos.connector.gsma.zeebe.JobVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +50,7 @@ public class TransactionStateWorker {
             logger.info("Job '{}' started from process '{}' with key {}", job.getType(), job.getBpmnProcessId(), job.getKey());
             Map<String, Object> variables = job.getVariablesAsMap();
             variables.put(TRANSFER_RETRY_COUNT, 1 + (Integer) variables.getOrDefault(TRANSFER_RETRY_COUNT, 0));
-            GSMATransaction gsmaChannelRequest = objectMapper.readValue((String) variables.get("gsmaChannelRequest"),
+            GSMATransaction gsmaChannelRequest = objectMapper.readValue(JobVariables.requiredText(variables, "gsmaChannelRequest"),
                     GSMATransaction.class);
 
             Exchange exchange = new DefaultExchange(camelContext);
