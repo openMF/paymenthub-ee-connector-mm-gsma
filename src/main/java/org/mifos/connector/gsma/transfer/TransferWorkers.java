@@ -29,6 +29,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.support.DefaultExchange;
 import org.mifos.connector.common.gsma.dto.GSMATransaction;
+import org.mifos.connector.gsma.config.ZeebeProperties;
+import org.mifos.connector.gsma.zeebe.JobVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +54,9 @@ public class TransferWorkers {
     @Autowired
     private CamelContext camelContext;
 
+    @Autowired
+    private ZeebeProperties zeebeProperties;
+
     @Value("${zeebe.client.evenly-allocated-max-jobs}")
     private int workerMaxJobs;
 
@@ -62,9 +67,11 @@ public class TransferWorkers {
             logger.info("Job '{}' started from process '{}' with key {}", job.getType(), job.getBpmnProcessId(), job.getKey());
             Map<String, Object> variables = job.getVariablesAsMap();
             variables.put(TRANSFER_RETRY_COUNT, -1);
+            // the correlation key of the TRANSFER_RESPONSE message below; checked before anything is sent
+            String transactionId = JobVariables.requiredAsText(variables, "transactionId");
 
             Exchange exchange = new DefaultExchange(camelContext);
-            exchange.setProperty(CORRELATION_ID, variables.get("transactionId"));
+            exchange.setProperty(CORRELATION_ID, transactionId);
             exchange.setProperty(CHANNEL_REQUEST, variables.get("channelRequest"));
             exchange.setProperty(GSMA_CHANNEL_REQUEST, variables.get("gsmaChannelRequest"));
             exchange.setProperty(IS_RTP_REQUEST, variables.get(IS_RTP_REQUEST));
@@ -77,9 +84,8 @@ public class TransferWorkers {
             variables.put(TRANSACTION_FAILED, false);
             // added to pass the transaction request api not found error
             variables.put("payeeTenantId", exchange.getProperty("payeeTenantId"));
-            zeebeClient.newPublishMessageCommand().messageName(TRANSFER_RESPONSE)
-                    .correlationKey(exchange.getProperty(CORRELATION_ID, String.class)).timeToLive(Duration.ofMillis(30000))
-                    .variables(variables).send();
+            zeebeClient.newPublishMessageCommand().messageName(TRANSFER_RESPONSE).correlationKey(transactionId)
+                    .timeToLive(Duration.ofMillis(zeebeProperties.client().ttl())).variables(variables).send();
             client.newCompleteCommand(job.getKey()).variables(variables).send().join();
         }).name("initiateTransfer").maxJobsActive(workerMaxJobs).open();
 
@@ -95,7 +101,8 @@ public class TransferWorkers {
             exchange.setProperty(QUOTE_REFERENCE, variables.get(QUOTE_REFERENCE));
             exchange.setProperty("payeeTenantId", variables.get("payeeTenantId"));
 
-            GSMATransaction gsmaTransaction = objectMapper.readValue((String) variables.get("gsmaChannelRequest"), GSMATransaction.class);
+            GSMATransaction gsmaTransaction = objectMapper.readValue(JobVariables.requiredText(variables, "gsmaChannelRequest"),
+                    GSMATransaction.class);
             gsmaTransaction.getInternationalTransferInformation().setQuoteId((String) variables.get(QUOTE_ID));
             gsmaTransaction.getInternationalTransferInformation().setQuotationReference((String) variables.get(QUOTE_REFERENCE));
 
@@ -110,7 +117,7 @@ public class TransferWorkers {
             logger.info("Job '{}' started from process '{}' with key {}", job.getType(), job.getBpmnProcessId(), job.getKey());
 
             Map<String, Object> variables = job.getVariablesAsMap();
-            GSMATransaction gsmaChannelRequest = objectMapper.readValue((String) variables.get("gsmaChannelRequest"),
+            GSMATransaction gsmaChannelRequest = objectMapper.readValue(JobVariables.requiredText(variables, "gsmaChannelRequest"),
                     GSMATransaction.class);
             GSMATransaction gsmaPayeeRequest = new GSMATransaction();
             variables.put(TRANSFER_RETRY_COUNT, -1);
@@ -124,7 +131,7 @@ public class TransferWorkers {
             logger.info(gsmaPayeeRequest.getDescriptionText());
             gsmaPayeeRequest.setAmount(convertedAmount);
             gsmaPayeeRequest.setCurrency(convertedCurrency);
-            gsmaPayeeRequest.setRequestingOrganisationTransactionReference(variables.get("transactionId").toString());
+            gsmaPayeeRequest.setRequestingOrganisationTransactionReference(JobVariables.requiredAsText(variables, "transactionId"));
             gsmaPayeeRequest.setCreditParty(gsmaChannelRequest.getCreditParty());
             gsmaPayeeRequest.setDebitParty(gsmaChannelRequest.getDebitParty());
             gsmaPayeeRequest.setReceivingLei(gsmaChannelRequest.getReceivingLei());

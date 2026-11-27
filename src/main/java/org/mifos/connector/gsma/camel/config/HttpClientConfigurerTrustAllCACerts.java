@@ -30,11 +30,13 @@ public class HttpClientConfigurerTrustAllCACerts implements HttpClientConfigurer
     public void configureHttpClient(HttpClientBuilder clientBuilder) {
         // setup a Trust Strategy that allows all certificates.
         //
-        SSLContext sslContext = null;
+        SSLContext sslContext;
         try {
             sslContext = SSLContextBuilder.create().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build();
         } catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-            logger.debug(e.getMessage());
+            // carrying on with a null SSLContext only moves the failure to a NullPointerException below
+            logger.error("Could not build the trust-all SSLContext for outbound HTTPS", e);
+            throw new IllegalStateException("Could not build the trust-all SSLContext for outbound HTTPS", e);
         }
 
         // don't check Hostnames, either, and use our weakened trust strategy.
